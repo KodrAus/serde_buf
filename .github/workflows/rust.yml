@@ -1,0 +1,29 @@
+name: rust
+
+on: [push, pull_request]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Test
+        run: cargo test
+
+  no-deps:
+    name: Check (no deps)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Check
+        run: |
+          rustup update nightly && \
+          cargo +nightly check -Z avoid-dev-deps

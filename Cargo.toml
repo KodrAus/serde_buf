@@ -1,0 +1,29 @@
+[package]
+name = "serde_buf"
+version = "0.1.0"
+authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
+edition = "2021"
+description = "Generic buffering for serde"
+documentation = "https://docs.rs/serde_buf"
+repository = "https://github.com/KodrAus/serde_buf.git"
+readme = "README.md"
+exclude = [
+    ".github"
+]
+license = "Apache-2.0 OR MIT"
+keywords = ["serde", "serialization"]
+categories = ["encoding"]
+
+[dependencies.serde]
+version = "1"
+default-features = false
+features = ["alloc"]
+
+[dev-dependencies.serde_test]
+version = "1"
+
+[dev-dependencies.serde_derive]
+version = "1"
+
+[dev-dependencies.serde_json]
+version = "1"
