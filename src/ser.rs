@@ -1,6 +1,6 @@
 use core::{cmp, fmt, marker::PhantomData};
 
-use alloc::{borrow::ToOwned, boxed::Box, string::ToString, vec::Vec};
+use alloc::{boxed::Box, string::ToString, vec::Vec};
 use serde::{
     ser::{
         self, Error as _, SerializeMap as _, SerializeSeq as _, SerializeStruct as _,
@@ -290,11 +290,11 @@ impl serde::Serializer for Serializer {
     }
 
     fn serialize_str(self, v: &str) -> Result<Self::Ok, Self::Error> {
-        Ok(Owned(Value::Str(v.to_owned())))
+        Ok(Owned(Value::Str(v.into())))
     }
 
     fn serialize_bytes(self, v: &[u8]) -> Result<Self::Ok, Self::Error> {
-        Ok(Owned(Value::Bytes(v.to_owned())))
+        Ok(Owned(Value::Bytes(v.into())))
     }
 
     fn serialize_none(self) -> Result<Self::Ok, Self::Error> {
@@ -305,7 +305,9 @@ impl serde::Serializer for Serializer {
     where
         T: Serialize,
     {
-        Ok(Owned(Value::Some(Box::new(value.serialize(Serializer::new())?.0))))
+        Ok(Owned(Value::Some(Box::new(
+            value.serialize(Serializer::new())?.0,
+        ))))
     }
 
     fn serialize_unit(self) -> Result<Self::Ok, Self::Error> {
@@ -525,7 +527,8 @@ impl ser::SerializeStruct for SerializeStruct {
     where
         T: Serialize,
     {
-        self.fields.push((key, value.serialize(Serializer::new())?.0));
+        self.fields
+            .push((key, value.serialize(Serializer::new())?.0));
 
         Ok(())
     }
@@ -550,7 +553,8 @@ impl ser::SerializeStructVariant for SerializeStructVariant {
     where
         T: Serialize,
     {
-        self.fields.push((key, value.serialize(Serializer::new())?.0));
+        self.fields
+            .push((key, value.serialize(Serializer::new())?.0));
 
         Ok(())
     }

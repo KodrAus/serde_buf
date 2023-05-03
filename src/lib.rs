@@ -160,7 +160,7 @@ use serde::Serialize;
 mod de;
 mod ser;
 
-pub use self::{ser::Serializer, de::Deserializer};
+pub use self::{de::Deserializer, ser::Serializer};
 
 /**
 An error encountered while buffering a value.
@@ -336,7 +336,7 @@ impl<'a> Ref<'a> {
     Create a buffer for an owned string value.
     */
     pub fn owned_str(v: impl Into<String>) -> Self {
-        Ref(Value::Str(v.into()))
+        Ref(Value::Str(v.into().into_boxed_str()))
     }
 
     /**
@@ -350,7 +350,7 @@ impl<'a> Ref<'a> {
     Create a buffer for an owned byte-string value.
     */
     pub fn owned_bytes(v: impl Into<Vec<u8>>) -> Self {
-        Ref(Value::Bytes(v.into()))
+        Ref(Value::Bytes(v.into().into_boxed_slice()))
     }
 
     /**
@@ -549,9 +549,9 @@ enum Value<'a> {
     F64(f64),
     Bool(bool),
     Char(char),
-    Str(String),
+    Str(Box<str>),
     BorrowedStr(&'a str),
-    Bytes(Vec<u8>),
+    Bytes(Box<[u8]>),
     BorrowedBytes(&'a [u8]),
     None,
     Some(Box<Value<'a>>),
