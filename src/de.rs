@@ -1,7 +1,7 @@
 use core::{fmt, marker::PhantomData};
 
 use alloc::{boxed::Box, string::ToString, vec};
-use serde::de::{self, Error as _, IntoDeserializer, Unexpected, Visitor};
+use serde_core::de::{self, Error as _, IntoDeserializer, Unexpected, Visitor};
 
 use crate::{Error, Owned, Ref, Value};
 
@@ -101,7 +101,7 @@ impl<'de> de::Deserializer<'de> for Deserializer<'de> {
         }
     }
 
-    serde::forward_to_deserialize_any! {
+    serde_core::forward_to_deserialize_any! {
         bool i8 i16 i32 i64 i128 u8 u16 u32 u64 u128 f32 f64 char str string
         bytes byte_buf option unit unit_struct newtype_struct seq tuple
         tuple_struct map struct enum identifier ignored_any

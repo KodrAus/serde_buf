@@ -1,7 +1,7 @@
 use core::{cmp, fmt, marker::PhantomData};
 
 use alloc::{boxed::Box, string::ToString, vec::Vec};
-use serde::{
+use serde_core::{
     ser::{
         self, Error as _, SerializeMap as _, SerializeSeq as _, SerializeStruct as _,
         SerializeStructVariant as _, SerializeTuple as _, SerializeTupleStruct as _,
@@ -15,7 +15,7 @@ use crate::{Error, Owned, Ref, Value};
 impl<'a> Serialize for Ref<'a> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer,
+        S: serde_core::Serializer,
     {
         self.0.serialize(serializer)
     }
@@ -24,7 +24,7 @@ impl<'a> Serialize for Ref<'a> {
 impl Serialize for Owned {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer,
+        S: serde_core::Serializer,
     {
         self.0.serialize(serializer)
     }
@@ -33,7 +33,7 @@ impl Serialize for Owned {
 impl<'a> Serialize for Value<'a> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer,
+        S: serde_core::Serializer,
     {
         match *self {
             Value::Unit => serializer.serialize_unit(),
@@ -169,7 +169,7 @@ impl ser::Error for Error {
 }
 
 /**
-A serializer that produces [`Owned`] buffers from an arbitrary [`serde::Serialize`].
+A serializer that produces [`Owned`] buffers from an arbitrary [`serde_core::Serialize`].
 */
 pub struct Serializer(PhantomData<()>);
 
@@ -222,7 +222,7 @@ pub struct SerializeStructVariant {
     fields: Vec<(&'static str, Value<'static>)>,
 }
 
-impl serde::Serializer for Serializer {
+impl serde_core::Serializer for Serializer {
     type Ok = Owned;
     type Error = Error;
     type SerializeSeq = SerializeSeq;

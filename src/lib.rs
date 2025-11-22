@@ -6,7 +6,7 @@ Buffers are guaranteed to serialize in exactly the same way as their original so
 
 # Getting an owned buffer
 
-Any type that implements [`serde::Serialize`] can be buffered into an [`Owned`] buffer:
+Any type that implements [`serde_core::Serialize`] can be buffered into an [`Owned`] buffer:
 
 ```
 # use std::cell::RefCell;
@@ -33,7 +33,7 @@ SOME_THREAD_STATIC.with(|ts| *ts.borrow_mut() = Some(buffer));
 # Getting a borrowed buffer
 
 Borrowed [`Ref`] buffers may have internally borrowed strings, which makes them incompatible
-with [`serde::Serialize`]. You can construct a [`Ref`] manually from any underlying source:
+with [`serde_core::Serialize`]. You can construct a [`Ref`] manually from any underlying source:
 
 ```
 use serde_buf::Ref;
@@ -55,11 +55,11 @@ fn buffer_my_data<'a>(data: &'_ MyData<'a>) -> Ref<'a> {
 
 # Serializing a buffer
 
-Once you've got an [`Owned`] or [`Ref`] buffer, you can then later use their own [`serde::Serialize`]
+Once you've got an [`Owned`] or [`Ref`] buffer, you can then later use their own [`serde_core::Serialize`]
 implementations to encode in some format:
 
 ```
-# use serde::Serialize;
+# use serde_core::Serialize;
 # use serde_derive::Serialize;
 # use serde_buf::Owned;
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -86,7 +86,7 @@ assert_eq!(data_json, buffer_json);
 
 # Deserializing from a buffer
 
-Values can also be deserialized directly from an [`Owned`] or [`Ref`] buffer through their [`serde::de::IntoDeserializer`]
+Values can also be deserialized directly from an [`Owned`] or [`Ref`] buffer through their [`serde_core::de::IntoDeserializer`]
 implementations:
 
 ```
@@ -97,7 +97,7 @@ implementations:
 #         ("content", Ref::str(data.content)),
 #     ])
 # }
-# use serde::{Deserialize, de::IntoDeserializer};
+# use serde_core::{Deserialize, de::IntoDeserializer};
 # use serde_derive::Deserialize;
 # use serde_buf::Ref;
 #[derive(Deserialize, Debug, PartialEq)]
@@ -122,13 +122,13 @@ assert_eq!(data, deserialized);
 
 # Deserializing directly to a buffer
 
-The [`Ref`] and [`Owned`] types don't implement [`serde::Deserialize`] and can't be deserialized directly.
+The [`Ref`] and [`Owned`] types don't implement [`serde_core::Deserialize`] and can't be deserialized directly.
 This is because `serde` relies on hints from the target type to know how to interpret enum variants.
-If a type implements both [`serde::Serialize`] and [`serde::Deserialize`] then you can first deserialize to
+If a type implements both [`serde_core::Serialize`] and [`serde_core::Deserialize`] then you can first deserialize to
 that concrete type, and then buffer it:
 
 ```
-# use serde::Deserialize;
+# use serde_core::Deserialize;
 # use serde_buf::Owned;
 # fn main() -> Result<(), Box<dyn std::error::Error>> {
 # fn data_json() -> String { serde_json::to_string(&MyData::Full { id: 42, content: "Some content" }).unwrap() }
@@ -155,7 +155,7 @@ extern crate alloc;
 use core::{borrow::Borrow, fmt};
 
 use alloc::{boxed::Box, string::String, vec::Vec};
-use serde::Serialize;
+use serde_core::Serialize;
 
 mod de;
 mod ser;
@@ -166,7 +166,7 @@ pub use self::{de::Deserializer, ser::Serializer};
 An error encountered while buffering a value.
 */
 #[derive(Debug)]
-pub struct Error(String);
+pub struct Error(#[allow(dead_code)] String);
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -174,7 +174,7 @@ impl fmt::Display for Error {
     }
 }
 
-impl serde::ser::StdError for Error {}
+impl serde_core::ser::StdError for Error {}
 
 /**
 A fully owned value.
@@ -603,7 +603,7 @@ mod tests {
     use core::marker::PhantomData;
 
     use alloc::borrow::{Cow, ToOwned};
-    use serde::{
+    use serde_core::{
         de::{Deserializer, IntoDeserializer, Visitor},
         ser::SerializeMap,
         Deserialize, Serialize,
@@ -980,7 +980,7 @@ mod tests {
     impl<'a> Serialize for Str<'a> {
         fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where
-            S: serde::Serializer,
+            S: serde_core::Serializer,
         {
             serializer.serialize_str(&self.0)
         }
@@ -989,7 +989,7 @@ mod tests {
     impl<'de> Deserialize<'de> for Str<'de> {
         fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
         where
-            D: serde::Deserializer<'de>,
+            D: serde_core::Deserializer<'de>,
         {
             let v = deserializer.deserialize_str(StrVisitor(PhantomData))?;
 
@@ -1008,21 +1008,21 @@ mod tests {
 
         fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
         where
-            E: serde::de::Error,
+            E: serde_core::de::Error,
         {
             Ok(Cow::Owned(v.to_owned()))
         }
 
         fn visit_string<E>(self, v: String) -> Result<Self::Value, E>
         where
-            E: serde::de::Error,
+            E: serde_core::de::Error,
         {
             Ok(Cow::Owned(v))
         }
 
         fn visit_borrowed_str<E>(self, v: &'de str) -> Result<Self::Value, E>
         where
-            E: serde::de::Error,
+            E: serde_core::de::Error,
         {
             Ok(Cow::Borrowed(v))
         }
@@ -1034,7 +1034,7 @@ mod tests {
     impl<'a> Serialize for Bytes<'a> {
         fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where
-            S: serde::Serializer,
+            S: serde_core::Serializer,
         {
             serializer.serialize_bytes(&self.0)
         }
@@ -1043,7 +1043,7 @@ mod tests {
     impl<'de> Deserialize<'de> for Bytes<'de> {
         fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
         where
-            D: serde::Deserializer<'de>,
+            D: serde_core::Deserializer<'de>,
         {
             let v = deserializer.deserialize_bytes(BytesVisitor(PhantomData))?;
 
@@ -1061,21 +1061,21 @@ mod tests {
 
         fn visit_bytes<E>(self, v: &[u8]) -> Result<Self::Value, E>
         where
-            E: serde::de::Error,
+            E: serde_core::de::Error,
         {
             Ok(Cow::Owned(v.to_owned()))
         }
 
         fn visit_byte_buf<E>(self, v: alloc::vec::Vec<u8>) -> Result<Self::Value, E>
         where
-            E: serde::de::Error,
+            E: serde_core::de::Error,
         {
             Ok(Cow::Owned(v))
         }
 
         fn visit_borrowed_bytes<E>(self, v: &'de [u8]) -> Result<Self::Value, E>
         where
-            E: serde::de::Error,
+            E: serde_core::de::Error,
         {
             Ok(Cow::Borrowed(v))
         }
@@ -1110,7 +1110,7 @@ mod tests {
     impl<'a> Serialize for Map<'a> {
         fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where
-            S: serde::Serializer,
+            S: serde_core::Serializer,
         {
             let mut serializer = serializer.serialize_map(Some(self.0.len()))?;
 
@@ -1143,7 +1143,7 @@ mod tests {
 
         fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
         where
-            A: serde::de::MapAccess<'de>,
+            A: serde_core::de::MapAccess<'de>,
         {
             let mut de = Vec::new();
 
