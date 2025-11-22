@@ -14,12 +14,15 @@ license = "Apache-2.0 OR MIT"
 keywords = ["serde", "serialization"]
 categories = ["encoding"]
 
-[dependencies.serde]
+[dependencies.serde_core]
 version = "1"
 default-features = false
 features = ["alloc"]
 
 [dev-dependencies.serde_test]
+version = "1"
+
+[dev-dependencies.serde]
 version = "1"
 
 [dev-dependencies.serde_derive]
